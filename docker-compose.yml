@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:13
@@ -11,7 +9,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   webserver:
-    image: apache/airflow:2.10.5
+    build:
+      context: ./airflow
+    image: custom-airflow:2.10.5
     restart: always
     depends_on:
       - postgres
@@ -23,20 +23,18 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/scripts:/opt/airflow/scripts
-      - ./airflow/requirements.txt:/opt/airflow/requirements.txt
       - ./airflow/logs:/opt/airflow/logs
     ports:
       - "8080:8080"
     command: >
       bash -c "
-      pip install -r /opt/airflow/requirements.txt &&
       airflow db init &&
       airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
       airflow webserver
       "
 
   scheduler:
-    image: apache/airflow:2.10.5
+    image: custom-airflow:2.10.5
     restart: always
     depends_on:
       - webserver
@@ -47,7 +45,6 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/scripts:/opt/airflow/scripts
-      - ./airflow/requirements.txt:/opt/airflow/requirements.txt
       - ./airflow/logs:/opt/airflow/logs
     command: scheduler
 
