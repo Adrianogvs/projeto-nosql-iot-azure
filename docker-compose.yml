@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  webserver:
+    image: apache/airflow:2.10.5
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__WEBSERVER__RBAC=False
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/scripts:/opt/airflow/scripts
+      - ./airflow/requirements.txt:/opt/airflow/requirements.txt
+      - ./airflow/logs:/opt/airflow/logs
+    ports:
+      - "8080:8080"
+    command: >
+      bash -c "
+      pip install -r /opt/airflow/requirements.txt &&
+      airflow db init &&
+      airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+      airflow webserver
+      "
+
+  scheduler:
+    image: apache/airflow:2.10.5
+    restart: always
+    depends_on:
+      - webserver
+    environment:
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/scripts:/opt/airflow/scripts
+      - ./airflow/requirements.txt:/opt/airflow/requirements.txt
+      - ./airflow/logs:/opt/airflow/logs
+    command: scheduler
+
+volumes:
+  postgres_data:
