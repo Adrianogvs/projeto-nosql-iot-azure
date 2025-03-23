@@ -15,6 +15,8 @@ services:
     restart: always
     depends_on:
       - postgres
+    env_file:
+      - ../.env
     environment:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
@@ -38,6 +40,8 @@ services:
     restart: always
     depends_on:
       - webserver
+    env_file:
+      - ../.env
     environment:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor

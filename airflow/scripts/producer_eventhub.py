@@ -7,10 +7,7 @@ import os
 from dotenv import load_dotenv
 from azure.eventhub import EventHubProducerClient, EventData
 
-# Força UTF-8 no terminal
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-
-# Carrega variáveis do .env
 load_dotenv()
 
 # Configurações
@@ -23,6 +20,9 @@ EQUIPAMENTOS = ["SensorBox 1", "SensorBox 2", "SensorBox 3"]
 # Azure Event Hub
 CONNECTION_STR = os.getenv("EVENT_HUB_CONNECTION_STRING")
 EVENT_HUB_NAME = os.getenv("EVENT_HUB_NAME")
+
+if not CONNECTION_STR or not EVENT_HUB_NAME:
+    raise ValueError("As variáveis EVENT_HUB_CONNECTION_STRING ou EVENT_HUB_NAME não estão definidas.")
 
 def gerar_registro():
     sensores = []
